@@ -7,6 +7,7 @@
     body {
       font-family: system-ui, sans-serif;
       padding: 20px;
+      line-height: 1.6;
     }
     #grid {
       position: relative;
@@ -19,38 +20,42 @@
       background: black;
       transform: translate(-50%, -50%);
     }
-    label {
-      margin-top: 12px;
-      display: block;
-      font-weight: 600;
-    }
+    label { font-weight: 600; display: block; margin-top: 12px; }
     input[type="text"] {
-      width: 120px;
-      padding: 4px 6px;
-      font-size: 16px;
+      width: 200px; padding: 6px; font-size: 18px;
     }
   </style>
 </head>
 <body>
-  <h1>Dot Matrix Variable Weight Font</h1>
+
+  <h1>Dot Variable Weight Font (Spacing + Thick Mode)</h1>
 
   <label>
-    문자 입력:
-    <input id="textInput" type="text" value="A" maxlength="20">
+    텍스트 입력:
+    <input id="textInput" type="text" value="HELLO" maxlength="50">
   </label>
 
   <label>
-    Weight:
-    <input id="weightSlider" type="range" min="0" max="1" step="0.01" value="0.3">
-    <span id="weightLabel">0.30</span>
+    Weight (굵기):
+    <input id="weightSlider" type="range" min="0" max="1" step="0.01" value="0.2">
+    <span id="weightLabel">0.20</span>
+  </label>
+
+  <label>
+    Letter Spacing (글자 간격):
+    <input id="spacingSlider" type="range" min="0" max="100" step="1" value="20">
+    <span id="spacingLabel">20px</span>
+  </label>
+
+  <label>
+    <input id="thickMode" type="checkbox">
+    Thick mode (완전 붙는 두꺼운 스타일)
   </label>
 
   <div id="grid"></div>
 
   <script>
-    /* ================================================
-       5×7 DOT MATRIX FONT (A~Z)
-       ================================================ */
+    /* ===== 5×7 Dot Matrix Font (A~Z) ===== */
     const glyphs = {
       "A":[ "01110","10001","10001","11111","10001","10001","10001" ],
       "B":[ "11110","10001","10001","11110","10001","10001","11110" ],
@@ -80,27 +85,32 @@
       "Z":[ "11111","00001","00010","00100","01000","10000","11111" ]
     };
 
-    /* ================================================
-       SETTINGS
-       ================================================ */
+    /* ===== SETTINGS ===== */
     const cols = 5;
     const rows = 7;
-    const cellSize = 40;  // 글자 셀 거리
-    const minR = 4;       // 가장 가는 점 크기
-    const maxR = 18;      // 가장 두꺼운 점 크기   
+    const cellSize = 40; // 기본 셀 사이즈
+
+    const minR = 4;
+    const maxR = 18;
+    const thickR = 32; // Thick mode 점 크기
 
     const grid = document.getElementById("grid");
     const weightSlider = document.getElementById("weightSlider");
-    const weightLabel = document.getElementById("weightLabel");
+    const spacingSlider = document.getElementById("spacingSlider");
     const textInput = document.getElementById("textInput");
+    const thickMode = document.getElementById("thickMode");
 
-    /* ================================================
-       RENDER FUNCTION
-       ================================================ */
+    const weightLabel = document.getElementById("weightLabel");
+    const spacingLabel = document.getElementById("spacingLabel");
+
+    /* ===== RENDERER ===== */
     function drawText() {
       const text = textInput.value.toUpperCase();
       const weight = parseFloat(weightSlider.value);
+      const spacing = parseInt(spacingSlider.value);
+
       weightLabel.textContent = weight.toFixed(2);
+      spacingLabel.textContent = spacing + "px";
 
       grid.innerHTML = "";
 
@@ -108,27 +118,30 @@
 
       for (let char of text) {
         const glyph = glyphs[char];
-
-        if (!glyph) {
-          offsetX += cols * cellSize; // 알파벳 아닌 문자는 스킵
+        if (!glyph) { 
+          offsetX += cols * cellSize + spacing;
           continue;
         }
 
-        const radius = minR + (maxR - minR) * weight;
+        const radius = thickMode.checked
+          ? thickR  // thick 모드일 때 점 겁나 크게
+          : minR + (maxR - minR) * weight;
 
-        // 문자 1개 그리기
+        // dot 그리기
         for (let y = 0; y < rows; y++) {
           for (let x = 0; x < cols; x++) {
             if (glyph[y][x] === "1") {
+              const d = radius * 2;
+
               const dot = document.createElement("div");
               dot.className = "dot";
 
               const cx = offsetX + x * cellSize + cellSize / 2;
               const cy = y * cellSize + cellSize / 2;
+
               dot.style.left = cx + "px";
               dot.style.top = cy + "px";
 
-              const d = radius * 2;
               dot.style.width = d + "px";
               dot.style.height = d + "px";
 
@@ -137,20 +150,22 @@
           }
         }
 
-        offsetX += cols * cellSize + 20; // 글자 간 간격
+        offsetX += cols * cellSize + spacing; // 글자 간격 반영
       }
 
       grid.style.width = offsetX + "px";
       grid.style.height = rows * cellSize + "px";
     }
 
-    /* ================================================
-       EVENT BINDINGS
-       ================================================ */
+    /* ===== EVENT ===== */
     weightSlider.addEventListener("input", drawText);
+    spacingSlider.addEventListener("input", drawText);
     textInput.addEventListener("input", drawText);
+    thickMode.addEventListener("change", drawText);
 
-    drawText(); // 초기 실행
+    drawText();
   </script>
+
 </body>
 </html>
+
