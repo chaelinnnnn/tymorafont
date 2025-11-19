@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <title>Dot Weight Font Generator</title>
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      padding: 20px;
+    }
+    #grid {
+      position: relative;
+      display: inline-block;
+      margin-top: 20px;
+    }
+    .dot {
+      position: absolute;
+      border-radius: 50%;
+      background: black;
+      transform: translate(-50%, -50%);
+    }
+    label {
+      margin-top: 12px;
+      display: block;
+      font-weight: 600;
+    }
+    input[type="text"] {
+      width: 120px;
+      padding: 4px 6px;
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Dot Matrix Variable Weight Font</h1>
+
+  <label>
+    문자 입력:
+    <input id="textInput" type="text" value="A" maxlength="20">
+  </label>
+
+  <label>
+    Weight:
+    <input id="weightSlider" type="range" min="0" max="1" step="0.01" value="0.3">
+    <span id="weightLabel">0.30</span>
+  </label>
+
+  <div id="grid"></div>
+
+  <script>
+    /* ================================================
+       5×7 DOT MATRIX FONT (A~Z)
+       ================================================ */
+    const glyphs = {
+      "A":[ "01110","10001","10001","11111","10001","10001","10001" ],
+      "B":[ "11110","10001","10001","11110","10001","10001","11110" ],
+      "C":[ "01110","10001","10000","10000","10000","10001","01110" ],
+      "D":[ "11100","10010","10001","10001","10001","10010","11100" ],
+      "E":[ "11111","10000","10000","11110","10000","10000","11111" ],
+      "F":[ "11111","10000","10000","11110","10000","10000","10000" ],
+      "G":[ "01110","10001","10000","10111","10001","10001","01110" ],
+      "H":[ "10001","10001","10001","11111","10001","10001","10001" ],
+      "I":[ "01110","00100","00100","00100","00100","00100","01110" ],
+      "J":[ "00111","00010","00010","00010","10010","10010","01100" ],
+      "K":[ "10001","10010","10100","11000","10100","10010","10001" ],
+      "L":[ "10000","10000","10000","10000","10000","10000","11111" ],
+      "M":[ "10001","11011","10101","10001","10001","10001","10001" ],
+      "N":[ "10001","11001","10101","10011","10001","10001","10001" ],
+      "O":[ "01110","10001","10001","10001","10001","10001","01110" ],
+      "P":[ "11110","10001","10001","11110","10000","10000","10000" ],
+      "Q":[ "01110","10001","10001","10001","10101","10010","01101" ],
+      "R":[ "11110","10001","10001","11110","10100","10010","10001" ],
+      "S":[ "01111","10000","10000","01110","00001","00001","11110" ],
+      "T":[ "11111","00100","00100","00100","00100","00100","00100" ],
+      "U":[ "10001","10001","10001","10001","10001","10001","01110" ],
+      "V":[ "10001","10001","10001","10001","10001","01010","00100" ],
+      "W":[ "10001","10001","10001","10001","10101","11011","10001" ],
+      "X":[ "10001","01010","00100","00100","00100","01010","10001" ],
+      "Y":[ "10001","01010","00100","00100","00100","00100","00100" ],
+      "Z":[ "11111","00001","00010","00100","01000","10000","11111" ]
+    };
+
+    /* ================================================
+       SETTINGS
+       ================================================ */
+    const cols = 5;
+    const rows = 7;
+    const cellSize = 40;  // 글자 셀 거리
+    const minR = 4;       // 가장 가는 점 크기
+    const maxR = 18;      // 가장 두꺼운 점 크기   
+
+    const grid = document.getElementById("grid");
+    const weightSlider = document.getElementById("weightSlider");
+    const weightLabel = document.getElementById("weightLabel");
+    const textInput = document.getElementById("textInput");
+
+    /* ================================================
+       RENDER FUNCTION
+       ================================================ */
+    function drawText() {
+      const text = textInput.value.toUpperCase();
+      const weight = parseFloat(weightSlider.value);
+      weightLabel.textContent = weight.toFixed(2);
+
+      grid.innerHTML = "";
+
+      let offsetX = 0;
+
+      for (let char of text) {
+        const glyph = glyphs[char];
+
+        if (!glyph) {
+          offsetX += cols * cellSize; // 알파벳 아닌 문자는 스킵
+          continue;
+        }
+
+        const radius = minR + (maxR - minR) * weight;
+
+        // 문자 1개 그리기
+        for (let y = 0; y < rows; y++) {
+          for (let x = 0; x < cols; x++) {
+            if (glyph[y][x] === "1") {
+              const dot = document.createElement("div");
+              dot.className = "dot";
+
+              const cx = offsetX + x * cellSize + cellSize / 2;
+              const cy = y * cellSize + cellSize / 2;
+              dot.style.left = cx + "px";
+              dot.style.top = cy + "px";
+
+              const d = radius * 2;
+              dot.style.width = d + "px";
+              dot.style.height = d + "px";
+
+              grid.appendChild(dot);
+            }
+          }
+        }
+
+        offsetX += cols * cellSize + 20; // 글자 간 간격
+      }
+
+      grid.style.width = offsetX + "px";
+      grid.style.height = rows * cellSize + "px";
+    }
+
+    /* ================================================
+       EVENT BINDINGS
+       ================================================ */
+    weightSlider.addEventListener("input", drawText);
+    textInput.addEventListener("input", drawText);
+
+    drawText(); // 초기 실행
+  </script>
+</body>
+</html>
