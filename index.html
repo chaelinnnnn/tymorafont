@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
   <meta charset="utf-8">
-  <title>Dot Weight 2.0 Blob Font Generator</title>
+  <title>Dot Weight 2.0 Blob Font + SVG Export</title>
   <style>
     body {
       font-family: system-ui, sans-serif;
@@ -13,6 +13,7 @@
       position: relative;
       display: inline-block;
       margin-top: 20px;
+      border: 1px dashed #ccc;
     }
     .dot {
       position: absolute;
@@ -26,11 +27,24 @@
       padding: 6px;
       font-size: 18px;
     }
+    #svgCode {
+      width: 100%;
+      height: 200px;
+      margin-top: 16px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size: 12px;
+    }
+    button {
+      margin-top: 14px;
+      padding: 8px 16px;
+      font-size: 14px;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
 
-  <h1>Dot Weight Font (0 → 2.0 Blob Expansion)</h1>
+  <h1>Dot Weight Font (0 → 2.0 Blob) + SVG Export</h1>
 
   <label>
     텍스트 입력:
@@ -49,7 +63,11 @@
     <span id="spacingLabel">20px</span>
   </label>
 
+  <button id="exportSvgBtn">SVG로 내보내기 (다운로드)</button>
+
   <div id="grid"></div>
+
+  <textarea id="svgCode" placeholder="여기에 생성된 SVG 코드가 표시됩니다."></textarea>
 
   <script>
     /* ===== 5×7 DOT FONT (A~Z) ===== */
@@ -87,79 +105,129 @@
     const rows = 7;
     const cellSize = 40;
 
-    const minR = 4;     // 가장 얇은 반지름
-    const midR = 18;    // weight=1.0일 때 정상 두께
-    const blobExtra = 40; // blob 확장 크기
+    const minR = 4;      // weight=0
+    const midR = 18;     // weight=1.0
+    const blobExtra = 40; // weight 1~2에서 추가로 커지는 양
 
-    const grid = document.getElementById("grid");
-    const textInput = document.getElementById("textInput");
-    const weightSlider = document.getElementById("weightSlider");
+    const grid          = document.getElementById("grid");
+    const textInput     = document.getElementById("textInput");
+    const weightSlider  = document.getElementById("weightSlider");
     const spacingSlider = document.getElementById("spacingSlider");
+    const weightLabel   = document.getElementById("weightLabel");
+    const spacingLabel  = document.getElementById("spacingLabel");
+    const svgCodeArea   = document.getElementById("svgCode");
+    const exportSvgBtn  = document.getElementById("exportSvgBtn");
 
-    const weightLabel = document.getElementById("weightLabel");
-    const spacingLabel = document.getElementById("spacingLabel");
-
-    /* ===== RENDER ===== */
-    function drawText() {
-      const text = textInput.value.toUpperCase();
-      const weight = parseFloat(weightSlider.value);
+    /* ===== 공통: 도트 레이아웃 계산 ===== */
+    function computeDots() {
+      const text    = textInput.value.toUpperCase();
+      const weight  = parseFloat(weightSlider.value);
       const spacing = parseInt(spacingSlider.value);
 
-      weightLabel.textContent = weight.toFixed(2);
-      spacingLabel.textContent = spacing + "px";
-
-      grid.innerHTML = "";
+      let dots = [];
       let offsetX = 0;
 
       for (let char of text) {
         const glyph = glyphs[char];
+
         if (!glyph) {
           offsetX += cols * cellSize + spacing;
           continue;
         }
 
-        // 기본 점 크기: weight 0~1
+        // weight 0~1까지 기본 반지름
         let radius = minR + (midR - minR) * Math.min(weight, 1);
         let diameter = radius * 2;
 
-        // weight 1~2 (blob 확장)
+        // weight 1~2 구간은 blob 처럼 더 커짐
         if (weight > 1) {
-          const extra = (weight - 1); // 0~1
+          const extra = weight - 1;         // 0~1
           diameter = diameter + blobExtra * extra;
         }
 
-        // 점 그리기
+        const r = diameter / 2;
+
         for (let y = 0; y < rows; y++) {
           for (let x = 0; x < cols; x++) {
             if (glyph[y][x] === "1") {
-              const dot = document.createElement("div");
-              dot.className = "dot";
-
               const cx = offsetX + x * cellSize + cellSize / 2;
               const cy = y * cellSize + cellSize / 2;
-
-              dot.style.left = cx + "px";
-              dot.style.top = cy + "px";
-              dot.style.width = diameter + "px";
-              dot.style.height = diameter + "px";
-
-              grid.appendChild(dot);
+              dots.push({ cx, cy, r });
             }
           }
         }
-
         offsetX += cols * cellSize + spacing;
       }
 
-      grid.style.width = offsetX + "px";
-      grid.style.height = rows * cellSize + "px";
+      const width  = Math.max(offsetX, cellSize);      // 최소 1글자 폭
+      const height = rows * cellSize;
+
+      return { dots, width, height };
     }
 
+    /* ===== 화면에 렌더링 ===== */
+    function drawText() {
+      const { dots, width, height } = computeDots();
+      const weight  = parseFloat(weightSlider.value);
+      const spacing = parseInt(spacingSlider.value);
+
+      weightLabel.textContent  = weight.toFixed(2);
+      spacingLabel.textContent = spacing + "px";
+
+      grid.innerHTML = "";
+
+      dots.forEach(d => {
+        const dot = document.createElement("div");
+        dot.className = "dot";
+        dot.style.left = d.cx + "px";
+        dot.style.top  = d.cy + "px";
+        const diameter = d.r * 2;
+        dot.style.width  = diameter + "px";
+        dot.style.height = diameter + "px";
+        grid.appendChild(dot);
+      });
+
+      grid.style.width  = width + "px";
+      grid.style.height = height + "px";
+    }
+
+    /* ===== SVG 생성 & 다운로드 ===== */
+    function exportSvg() {
+      const { dots, width, height } = computeDots();
+
+      // SVG 문자열 생성
+      const parts = [];
+      parts.push(`<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">`);
+      dots.forEach(d => {
+        parts.push(
+          `  <circle cx="${d.cx.toFixed(2)}" cy="${d.cy.toFixed(2)}" r="${d.r.toFixed(2)}" fill="black" />`
+        );
+      });
+      parts.push(`</svg>`);
+      const svg = parts.join("\n");
+
+      // 텍스트 박스에 보여주기
+      svgCodeArea.value = svg;
+
+      // 파일로 다운로드
+      const blob = new Blob([svg], { type: "image/svg+xml" });
+      const url  = URL.createObjectURL(blob);
+      const a    = document.createElement("a");
+      a.href = url;
+      a.download = "dot-font.svg";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    /* ===== 이벤트 연결 ===== */
     weightSlider.addEventListener("input", drawText);
     spacingSlider.addEventListener("input", drawText);
     textInput.addEventListener("input", drawText);
+    exportSvgBtn.addEventListener("click", exportSvg);
 
-    drawText();
+    drawText(); // 초기 렌더
   </script>
 
 </body>
