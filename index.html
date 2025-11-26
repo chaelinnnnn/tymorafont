@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
   <meta charset="utf-8">
-  <title>Dot Weight Font (Blob 2.0) + Multiline + SVG Export</title>
+  <title>Dot Font Multiline + SVG Export</title>
   <style>
     body {
       font-family: system-ui, sans-serif;
@@ -14,6 +14,7 @@
       display: inline-block;
       margin-top: 20px;
       border: 1px dashed #ccc;
+      background: #f9f9f9;
     }
     .dot {
       position: absolute;
@@ -21,21 +22,27 @@
       background: black;
       transform: translate(-50%, -50%);
     }
-    label { font-weight: 600; display: block; margin-top: 14px; }
-    textarea {
-      width: 300px;
-      height: 90px;
+    label {
+      font-weight: 600;
+      display: block;
+      margin-top: 14px;
+    }
+    textarea#textInput {
+      width: 320px;
+      height: 100px;
       padding: 8px;
       font-size: 16px;
       font-family: inherit;
+      box-sizing: border-box;
       white-space: pre;
     }
     #svgCode {
       width: 100%;
       height: 200px;
       margin-top: 16px;
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
       font-size: 12px;
+      box-sizing: border-box;
     }
     button {
       margin-top: 14px;
@@ -47,18 +54,18 @@
 </head>
 <body>
 
-<h1>Dot Weight Font (0 → 2.0 Blob) + Multiline + SVG Export</h1>
+<h1>Dot Weight Font (0 → 2.0 Blob) + Multiline + SVG</h1>
 
 <label>
-  텍스트 입력 (줄바꿈 가능):
+  텍스트 입력 (엔터로 줄바꿈 가능):
   <textarea id="textInput">HELLO
 WORLD</textarea>
 </label>
 
 <label>
   Weight (0 → 2.0):
-  <input id="weightSlider" type="range" min="0" max="2" step="0.01" value="0.3">
-  <span id="weightLabel">0.30</span>
+  <input id="weightSlider" type="range" min="0" max="2" step="0.01" value="0.5">
+  <span id="weightLabel">0.50</span>
 </label>
 
 <label>
@@ -73,167 +80,201 @@ WORLD</textarea>
 
 <textarea id="svgCode" placeholder="여기에 SVG 코드가 표시됩니다."></textarea>
 
-
-
 <script>
-/* ========== 5×7 DOT FONT (A~Z) ========== */
-const glyphs = {
-  "A":[ "01110","10001","10001","11111","10001","10001","10001" ],
-  "B":[ "11110","10001","10001","11110","10001","10001","11110" ],
-  "C":[ "01110","10001","10000","10000","10000","10001","01110" ],
-  "D":[ "11100","10010","10001","10001","10001","10010","11100" ],
-  "E":[ "11111","10000","10000","11110","10000","10000","11111" ],
-  "F":[ "11111","10000","10000","11110","10000","10000","10000" ],
-  "G":[ "01110","10001","10000","10111","10001","10001","01110" ],
-  "H":[ "10001","10001","10001","11111","10001","10001","10001" ],
-  "I":[ "01110","00100","00100","00100","00100","00100","01110" ],
-  "J":[ "00111","00010","00010","00010","10010","10010","01100" ],
-  "K":[ "10001","10010","10100","11000","10100","10010","10001" ],
-  "L":[ "10000","10000","10000","10000","10000","10000","11111" ],
-  "M":[ "10001","11011","10101","10001","10001","10001","10001" ],
-  "N":[ "10001","11001","10101","10011","10001","10001","10001" ],
-  "O":[ "01110","10001","10001","10001","10001","10001","01110" ],
-  "P":[ "11110","10001","10001","11110","10000","10000","10000" ],
-  "Q":[ "01110","10001","10001","10001","10101","10010","01101" ],
-  "R":[ "11110","10001","10001","11110","10100","10010","10001" ],
-  "S":[ "01111","10000","10000","01110","00001","00001","11110" ],
-  "T":[ "11111","00100","00100","00100","00100","00100","00100" ],
-  "U":[ "10001","10001","10001","10001","10001","10001","01110" ],
-  "V":[ "10001","10001","10001","10001","10001","01010","00100" ],
-  "W":[ "10001","10001","10001","10001","10101","11011","10001" ],
-  "X":[ "10001","01010","00100","00100","00100","01010","10001" ],
-  "Y":[ "10001","01010","00100","00100","00100","00100","00100" ],
-  "Z":[ "11111","00001","00010","00100","01000","10000","11111" ]
-};
+window.addEventListener('load', function () {
+  // 5x7 도트 폰트 정의 (A~Z)
+  var glyphs = {
+    A: [ "01110","10001","10001","11111","10001","10001","10001" ],
+    B: [ "11110","10001","10001","11110","10001","10001","11110" ],
+    C: [ "01110","10001","10000","10000","10000","10001","01110" ],
+    D: [ "11100","10010","10001","10001","10001","10010","11100" ],
+    E: [ "11111","10000","10000","11110","10000","10000","11111" ],
+    F: [ "11111","10000","10000","11110","10000","10000","10000" ],
+    G: [ "01110","10001","10000","10111","10001","10001","01110" ],
+    H: [ "10001","10001","10001","11111","10001","10001","10001" ],
+    I: [ "01110","00100","00100","00100","00100","00100","01110" ],
+    J: [ "00111","00010","00010","00010","10010","10010","01100" ],
+    K: [ "10001","10010","10100","11000","10100","10010","10001" ],
+    L: [ "10000","10000","10000","10000","10000","10000","11111" ],
+    M: [ "10001","11011","10101","10001","10001","10001","10001" ],
+    N: [ "10001","11001","10101","10011","10001","10001","10001" ],
+    O: [ "01110","10001","10001","10001","10001","10001","01110" ],
+    P: [ "11110","10001","10001","11110","10000","10000","10000" ],
+    Q: [ "01110","10001","10001","10001","10101","10010","01101" ],
+    R: [ "11110","10001","10001","11110","10100","10010","10001" ],
+    S: [ "01111","10000","10000","01110","00001","00001","11110" ],
+    T: [ "11111","00100","00100","00100","00100","00100","00100" ],
+    U: [ "10001","10001","10001","10001","10001","10001","01110" ],
+    V: [ "10001","10001","10001","10001","10001","01010","00100" ],
+    W: [ "10001","10001","10001","10001","10101","11011","10001" ],
+    X: [ "10001","01010","00100","00100","00100","01010","10001" ],
+    Y: [ "10001","01010","00100","00100","00100","00100","00100" ],
+    Z: [ "11111","00001","00010","00100","01000","10000","11111" ]
+  };
 
-/* ========== SETTINGS ========== */
-const cols = 5, rows = 7;
-const cellSize = 40;
+  // 설정값
+  var cols = 5;
+  var rows = 7;
+  var cellSize = 40;
 
-const minR = 4;         // weight=0
-const midR = 18;        // weight=1
-const blobExtra = 40;   // weight=1→2 확장
+  var minR = 4;       // weight = 0 일 때 반지름
+  var midR = 18;      // weight = 1 일 때 기본 반지름
+  var blobExtra = 40; // weight 1~2 구간에서 추가로 커지는 정도
 
-const lineGap = rows * cellSize + 40; // 권장 라인 간격
+  var lineGap = rows * cellSize + 40; // 줄 간 간격
 
-/* DOM */
-const grid = document.getElementById("grid");
-const textInput = document.getElementById("textInput");
-const weightSlider = document.getElementById("weightSlider");
-const spacingSlider = document.getElementById("spacingSlider");
-const weightLabel = document.getElementById("weightLabel");
-const spacingLabel = document.getElementById("spacingLabel");
-const svgCodeArea = document.getElementById("svgCode");
-const exportSvgBtn = document.getElementById("exportSvgBtn");
+  // DOM 요소
+  var grid          = document.getElementById('grid');
+  var textInput     = document.getElementById('textInput');
+  var weightSlider  = document.getElementById('weightSlider');
+  var spacingSlider = document.getElementById('spacingSlider');
+  var weightLabel   = document.getElementById('weightLabel');
+  var spacingLabel  = document.getElementById('spacingLabel');
+  var svgCodeArea   = document.getElementById('svgCode');
+  var exportSvgBtn  = document.getElementById('exportSvgBtn');
 
-/* ========== 도트 계산: 줄바꿈 포함 ========== */
-function computeDots() {
-  const lines = textInput.value.split("\n");
-  const weight = parseFloat(weightSlider.value);
-  const spacing = parseInt(spacingSlider.value);
+  // 줄바꿈 포함 도트 좌표 계산
+  function computeDots() {
+    // 줄바꿈(\r\n, \r, \n) 통일
+    var raw   = textInput.value.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+    var lines = raw.split('\n');
 
-  let dots = [];
-  let maxWidth = 0;
+    var weight  = parseFloat(weightSlider.value) || 0;
+    var spacing = parseInt(spacingSlider.value, 10) || 0;
 
-  lines.forEach((line, lineIndex) => {
-    let offsetX = 0;
-    const offsetY = lineIndex * lineGap;
+    var dots = [];
+    var maxWidth = 0;
 
-    for (let ch of line.toUpperCase()) {
-      const glyph = glyphs[ch];
-      if (!glyph) {
-        offsetX += cols * cellSize + spacing;
-        continue;
-      }
+    for (var li = 0; li < lines.length; li++) {
+      var line = lines[li];
+      var offsetX = 0;
+      var offsetY = li * lineGap;
 
-      // 기본 점 크기
-      let radius = minR + (midR - minR) * Math.min(weight, 1);
-      let diameter = radius * 2;
+      for (var ci = 0; ci < line.length; ci++) {
+        var ch = line.charAt(ci).toUpperCase();
+        var glyph = glyphs[ch];
 
-      if (weight > 1) diameter += blobExtra * (weight - 1);
+        if (!glyph) {
+          // 알파벳이 아니면 그냥 공백처럼 거리만 띄움
+          offsetX += cols * cellSize + spacing;
+          continue;
+        }
 
-      const r = diameter / 2;
+        // weight 0 ~ 1
+        var base = Math.min(weight, 1);
+        var radius = minR + (midR - minR) * base;
+        var diameter = radius * 2;
 
-      for (let y = 0; y < rows; y++) {
-        for (let x = 0; x < cols; x++) {
-          if (glyph[y][x] === "1") {
-            dots.push({
-              cx: offsetX + x * cellSize + cellSize / 2,
-              cy: offsetY + y * cellSize + cellSize / 2,
-              r
-            });
+        // weight 1 ~ 2: blob처럼 점을 더 키움
+        if (weight > 1) {
+          var extra = weight - 1; // 0~1
+          diameter += blobExtra * extra;
+        }
+
+        var r = diameter / 2;
+
+        for (var y = 0; y < rows; y++) {
+          for (var x = 0; x < cols; x++) {
+            if (glyph[y].charAt(x) === '1') {
+              dots.push({
+                cx: offsetX + x * cellSize + cellSize / 2,
+                cy: offsetY + y * cellSize + cellSize / 2,
+                r: r
+              });
+            }
           }
         }
+
+        offsetX += cols * cellSize + spacing;
       }
 
-      offsetX += cols * cellSize + spacing;
+      if (offsetX > maxWidth) {
+        maxWidth = offsetX;
+      }
     }
 
-    maxWidth = Math.max(maxWidth, offsetX);
-  });
+    if (maxWidth === 0) {
+      maxWidth = cols * cellSize;
+    }
 
-  const height = lines.length * lineGap;
+    var height = Math.max(lineGap * lines.length, lineGap);
 
-  return { dots, width: maxWidth, height };
-}
+    return { dots: dots, width: maxWidth, height: height };
+  }
 
-/* ========== 화면 렌더 ========== */
-function drawText() {
-  const { dots, width, height } = computeDots();
+  // 화면에 렌더링
+  function drawText() {
+    var result = computeDots();
+    var dots   = result.dots;
+    var width  = result.width;
+    var height = result.height;
 
-  weightLabel.textContent = weightSlider.value;
-  spacingLabel.textContent = spacingSlider.value + "px";
+    weightLabel.textContent  = parseFloat(weightSlider.value).toFixed(2);
+    spacingLabel.textContent = spacingSlider.value + 'px';
 
-  grid.innerHTML = "";
+    grid.innerHTML = '';
 
-  dots.forEach(d => {
-    const dot = document.createElement("div");
-    dot.className = "dot";
-    dot.style.left = d.cx + "px";
-    dot.style.top = d.cy + "px";
-    dot.style.width = d.r * 2 + "px";
-    dot.style.height = d.r * 2 + "px";
-    grid.appendChild(dot);
-  });
+    for (var i = 0; i < dots.length; i++) {
+      var d = dots[i];
+      var dot = document.createElement('div');
+      dot.className = 'dot';
+      var diameter = d.r * 2;
+      dot.style.left   = d.cx + 'px';
+      dot.style.top    = d.cy + 'px';
+      dot.style.width  = diameter + 'px';
+      dot.style.height = diameter + 'px';
+      grid.appendChild(dot);
+    }
 
-  grid.style.width = width + "px";
-  grid.style.height = height + "px";
-}
+    grid.style.width  = width + 'px';
+    grid.style.height = height + 'px';
+  }
 
-/* ========== SVG Export ========== */
-function exportSvg() {
-  const { dots, width, height } = computeDots();
+  // SVG 내보내기
+  function exportSvg() {
+    var result = computeDots();
+    var dots   = result.dots;
+    var width  = result.width;
+    var height = result.height;
 
-  let parts = [];
-  parts.push(`<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">`);
+    var lines = [];
+    lines.push('<svg xmlns="http://www.w3.org/2000/svg" width="' + width + '" height="' + height + '" viewBox="0 0 ' + width + ' ' + height + '">');
 
-  dots.forEach(d => {
-    parts.push(`  <circle cx="${d.cx}" cy="${d.cy}" r="${d.r}" fill="black" />`);
-  });
+    for (var i = 0; i < dots.length; i++) {
+      var d = dots[i];
+      lines.push('  <circle cx="' + d.cx.toFixed(2) + '" cy="' + d.cy.toFixed(2) + '" r="' + d.r.toFixed(2) + '" fill="black" />');
+    }
 
-  parts.push(`</svg>`);
+    lines.push('</svg>');
 
-  const svg = parts.join("\n");
-  svgCodeArea.value = svg;
+    var svg = lines.join('\n');
+    svgCodeArea.value = svg;
 
-  const blob = new Blob([svg], { type: "image/svg+xml" });
-  const url = URL.createObjectURL(blob);
+    // 다운로드
+    try {
+      var blob = new Blob([svg], { type: 'image/svg+xml' });
+      var url  = URL.createObjectURL(blob);
+      var a    = document.createElement('a');
+      a.href = url;
+      a.download = 'dot-font.svg';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      console.log('SVG 다운로드 중 오류:', e);
+    }
+  }
 
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "dot-font.svg";
-  a.click();
+  // 이벤트 연결
+  textInput.addEventListener('input', drawText);
+  weightSlider.addEventListener('input', drawText);
+  spacingSlider.addEventListener('input', drawText);
+  exportSvgBtn.addEventListener('click', exportSvg);
 
-  URL.revokeObjectURL(url);
-}
-
-/* EVENT */
-textInput.addEventListener("input", drawText);
-weightSlider.addEventListener("input", drawText);
-spacingSlider.addEventListener("input", drawText);
-exportSvgBtn.addEventListener("click", exportSvg);
-
-drawText();
+  // 처음 한 번 렌더
+  drawText();
+});
 </script>
 
 </body>
