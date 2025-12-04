@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ko">
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <title>Dot Font Multiline + SVG Export</title>
@@ -57,7 +57,7 @@
 <h1>Dot Weight Font (0 → 2.0 Blob) + Multiline + SVG</h1>
 
 <label>
-  텍스트 입력 (엔터로 줄바꿈 가능):
+  Text Input (line breaks allowed):
   <textarea id="textInput">HELLO
 WORLD</textarea>
 </label>
@@ -74,15 +74,15 @@ WORLD</textarea>
   <span id="spacingLabel">20px</span>
 </label>
 
-<button id="exportSvgBtn">SVG로 내보내기</button>
+<button id="exportSvgBtn">Export SVG</button>
 
 <div id="grid"></div>
 
-<textarea id="svgCode" placeholder="여기에 SVG 코드가 표시됩니다."></textarea>
+<textarea id="svgCode" placeholder="SVG code will appear here."></textarea>
 
 <script>
 window.addEventListener('load', function () {
-  // 5x7 도트 폰트 정의 (A~Z)
+  // 5x7 dot font (A~Z)
   var glyphs = {
     A: [ "01110","10001","10001","11111","10001","10001","10001" ],
     B: [ "11110","10001","10001","11110","10001","10001","11110" ],
@@ -112,18 +112,17 @@ window.addEventListener('load', function () {
     Z: [ "11111","00001","00010","00100","01000","10000","11111" ]
   };
 
-  // 설정값
+  // settings
   var cols = 5;
   var rows = 7;
   var cellSize = 40;
 
-  var minR = 4;       // weight = 0 일 때 반지름
-  var midR = 18;      // weight = 1 일 때 기본 반지름
-  var blobExtra = 40; // weight 1~2 구간에서 추가로 커지는 정도
+  var minR = 4;
+  var midR = 18;
+  var blobExtra = 40;
 
-  var lineGap = rows * cellSize + 40; // 줄 간 간격
+  var lineGap = rows * cellSize + 40;
 
-  // DOM 요소
   var grid          = document.getElementById('grid');
   var textInput     = document.getElementById('textInput');
   var weightSlider  = document.getElementById('weightSlider');
@@ -133,9 +132,8 @@ window.addEventListener('load', function () {
   var svgCodeArea   = document.getElementById('svgCode');
   var exportSvgBtn  = document.getElementById('exportSvgBtn');
 
-  // 줄바꿈 포함 도트 좌표 계산
+  // compute dots
   function computeDots() {
-    // 줄바꿈(\r\n, \r, \n) 통일
     var raw   = textInput.value.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
     var lines = raw.split('\n');
 
@@ -155,19 +153,16 @@ window.addEventListener('load', function () {
         var glyph = glyphs[ch];
 
         if (!glyph) {
-          // 알파벳이 아니면 그냥 공백처럼 거리만 띄움
           offsetX += cols * cellSize + spacing;
           continue;
         }
 
-        // weight 0 ~ 1
         var base = Math.min(weight, 1);
         var radius = minR + (midR - minR) * base;
         var diameter = radius * 2;
 
-        // weight 1 ~ 2: blob처럼 점을 더 키움
         if (weight > 1) {
-          var extra = weight - 1; // 0~1
+          var extra = weight - 1;
           diameter += blobExtra * extra;
         }
 
@@ -202,7 +197,7 @@ window.addEventListener('load', function () {
     return { dots: dots, width: maxWidth, height: height };
   }
 
-  // 화면에 렌더링
+  // render
   function drawText() {
     var result = computeDots();
     var dots   = result.dots;
@@ -230,7 +225,7 @@ window.addEventListener('load', function () {
     grid.style.height = height + 'px';
   }
 
-  // SVG 내보내기
+  // export SVG
   function exportSvg() {
     var result = computeDots();
     var dots   = result.dots;
@@ -250,7 +245,6 @@ window.addEventListener('load', function () {
     var svg = lines.join('\n');
     svgCodeArea.value = svg;
 
-    // 다운로드
     try {
       var blob = new Blob([svg], { type: 'image/svg+xml' });
       var url  = URL.createObjectURL(blob);
@@ -262,17 +256,15 @@ window.addEventListener('load', function () {
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
     } catch (e) {
-      console.log('SVG 다운로드 중 오류:', e);
+      console.log('Error while downloading SVG:', e);
     }
   }
 
-  // 이벤트 연결
   textInput.addEventListener('input', drawText);
   weightSlider.addEventListener('input', drawText);
   spacingSlider.addEventListener('input', drawText);
   exportSvgBtn.addEventListener('click', exportSvg);
 
-  // 처음 한 번 렌더
   drawText();
 });
 </script>
