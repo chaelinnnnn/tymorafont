@@ -4,121 +4,196 @@
   <meta charset="utf-8">
   <title>Dot Font Generator</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
-      font-family: 'DM Sans', sans-serif;
+      font-family: 'Space Mono', monospace;
       background: #ffffff;
       color: #111111;
-      min-height: 100vh;
-      padding: 48px 40px 60px;
-    }
-
-    .app {
-      max-width: 900px;
-      margin: 0 auto;
-    }
-
-    .app-header {
+      height: 100vh;
       display: flex;
-      align-items: baseline;
-      gap: 12px;
-      margin-bottom: 48px;
-    }
-
-    .app-title {
-      font-family: 'DM Mono', monospace;
-      font-size: 11px;
-      font-weight: 400;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: #999;
-      white-space: nowrap;
-    }
-
-    .app-divider {
-      flex: 1;
-      height: 0.5px;
-      background: #e0e0e0;
-    }
-
-    .controls {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      border: 0.5px solid #e0e0e0;
-      border-radius: 12px;
+      flex-direction: column;
       overflow: hidden;
-      margin-bottom: 24px;
     }
 
-    .control-cell {
-      padding: 20px 24px;
-      border-right: 0.5px solid #e0e0e0;
-      border-bottom: 0.5px solid #e0e0e0;
-    }
-
-    .control-cell:nth-child(2n) { border-right: none; }
-    .control-cell:nth-last-child(-n+2) { border-bottom: none; }
-
-    .textarea-cell {
-      grid-column: 1 / -1;
-      border-right: none;
-      border-bottom: 0.5px solid #e0e0e0;
-    }
-
-    .control-label {
-      font-size: 11px;
-      font-family: 'DM Mono', monospace;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: #999;
-      margin-bottom: 12px;
+    /* ── TOP BAR ── */
+    .topbar {
       display: flex;
-      justify-content: space-between;
+      align-items: stretch;
+      border-bottom: 1px solid #111;
+      background: #ffffff;
+      flex-shrink: 0;
+    }
+
+    .tab {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      padding: 13px 26px;
+      border-right: 1px solid #111;
+      cursor: pointer;
+      color: #999;
+      background: #f5f5f5;
+      transition: background 0.1s, color 0.1s;
+      display: flex;
       align-items: center;
     }
 
-    .control-value {
-      font-weight: 500;
+    .tab.active {
+      background: #111;
+      color: #fff;
+    }
+
+    .tab:hover:not(.active) {
+      background: #e8e8e8;
       color: #111;
-      letter-spacing: 0;
-      text-transform: none;
-      font-family: 'DM Sans', sans-serif;
+    }
+
+    .topbar-right {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      padding: 0 22px;
+      gap: 20px;
+    }
+
+    .dot-count {
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      color: #999;
+      text-transform: uppercase;
+    }
+
+    .export-btn {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      padding: 8px 18px;
+      border: 1px solid #111;
+      background: transparent;
+      color: #111;
+      cursor: pointer;
+      transition: background 0.1s, color 0.1s;
+    }
+
+    .export-btn:hover { background: #111; color: #fff; }
+    .export-btn:active { opacity: 0.7; }
+
+    /* ── LAYOUT ── */
+    .layout {
+      display: flex;
+      flex: 1;
+      min-height: 0;
+    }
+
+    /* ── SIDEBAR ── */
+    .sidebar {
+      width: 280px;
+      flex-shrink: 0;
+      border-right: 1px solid #111;
+      background: #ffffff;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+    }
+
+    .panel-section {
+      border-bottom: 1px solid #e0e0e0;
+      padding: 18px 20px 20px;
+    }
+
+    .section-title {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: #999;
+      margin-bottom: 14px;
     }
 
     textarea {
       width: 100%;
-      border: none;
-      background: transparent;
-      font-family: 'DM Mono', monospace;
-      font-size: 13px;
-      font-weight: 300;
-      color: #111;
-      resize: none;
+      background: #f5f5f5;
+      border: 1px solid #e0e0e0;
       outline: none;
+      font-family: 'Space Mono', monospace;
+      font-size: 12px;
+      color: #111;
+      padding: 10px 12px;
+      resize: none;
+      height: 68px;
       line-height: 1.6;
-      height: 56px;
     }
 
     textarea::placeholder { color: #bbb; }
 
+    .ctrl-row { margin-bottom: 16px; }
+    .ctrl-row:last-child { margin-bottom: 0; }
+
+    .ctrl-label {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 10px;
+    }
+
+    .ctrl-name {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: #999;
+    }
+
+    .ctrl-val {
+      font-size: 11px;
+      font-weight: 700;
+      color: #111;
+    }
+
+    /* ── SLIDER — round thumb ── */
     input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
       width: 100%;
-      accent-color: #111;
+      height: 1px;
+      background: #ccc;
+      outline: none;
       cursor: pointer;
     }
 
-    .canvas-area {
-      border: 0.5px solid #e0e0e0;
-      border-radius: 12px;
-      padding: 40px;
-      overflow: auto;
-      min-height: 200px;
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 14px;
+      height: 14px;
+      background: #111;
+      border-radius: 50%;
+      cursor: pointer;
+      border: none;
+    }
+
+    input[type="range"]::-moz-range-thumb {
+      width: 14px;
+      height: 14px;
+      background: #111;
+      border-radius: 50%;
+      border: none;
+      cursor: pointer;
+    }
+
+    /* ── CANVAS ── */
+    .canvas-wrap {
+      flex: 1;
       display: flex;
       align-items: flex-start;
       justify-content: flex-start;
+      padding: 48px;
+      overflow: auto;
       background: #ffffff;
     }
 
@@ -133,94 +208,73 @@
       background: #111111;
       transform: translate(-50%, -50%);
     }
-
-    .bottom-bar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-top: 16px;
-    }
-
-    .dot-count {
-      font-size: 11px;
-      font-family: 'DM Mono', monospace;
-      color: #999;
-      letter-spacing: 0.08em;
-    }
-
-    .export-btn {
-      font-family: 'DM Mono', monospace;
-      font-size: 11px;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      padding: 8px 18px;
-      border: 0.5px solid #ccc;
-      border-radius: 8px;
-      background: transparent;
-      color: #555;
-      cursor: pointer;
-      transition: background 0.12s, color 0.12s;
-    }
-
-    .export-btn:hover { background: #f5f5f5; color: #111; }
-    .export-btn:active { transform: scale(0.98); }
   </style>
 </head>
 <body>
-<div class="app">
 
-  <div class="app-header">
-    <span class="app-title">Dot Font</span>
-    <div class="app-divider"></div>
+<div class="topbar">
+  <div class="tab active">Controls</div>
+  <div class="tab">Preview</div>
+  <div class="topbar-right">
+    <span class="dot-count" id="dotCount">— dots</span>
+    <button class="export-btn" id="exportBtn">Save SVG</button>
   </div>
+</div>
 
-  <div class="controls">
-    <div class="control-cell textarea-cell">
-      <div class="control-label">Text</div>
-      <textarea id="txt" placeholder="Type something..." spellcheck="false">HELLO
+<div class="layout">
+
+  <div class="sidebar">
+
+    <div class="panel-section">
+      <div class="section-title">Text Input</div>
+      <textarea id="txt" placeholder="Type here..." spellcheck="false">HELLO
 WORLD</textarea>
     </div>
 
-    <div class="control-cell">
-      <div class="control-label">
-        Weight
-        <span class="control-value" id="wLabel">0.50</span>
+    <div class="panel-section">
+      <div class="section-title">Dot Weight</div>
+      <div class="ctrl-row">
+        <div class="ctrl-label">
+          <span class="ctrl-name">Weight</span>
+          <span class="ctrl-val" id="wLabel">0.50</span>
+        </div>
+        <input type="range" id="weight" min="0" max="2" step="0.01" value="0.5">
       </div>
-      <input type="range" id="weight" min="0" max="2" step="0.01" value="0.5">
     </div>
 
-    <div class="control-cell">
-      <div class="control-label">
-        Letter Spacing
-        <span class="control-value" id="sLabel">20px</span>
+    <div class="panel-section">
+      <div class="section-title">Spacing</div>
+      <div class="ctrl-row">
+        <div class="ctrl-label">
+          <span class="ctrl-name">Letter Spacing</span>
+          <span class="ctrl-val" id="sLabel">20px</span>
+        </div>
+        <input type="range" id="spacing" min="0" max="100" step="1" value="20">
       </div>
-      <input type="range" id="spacing" min="0" max="100" step="1" value="20">
+      <div class="ctrl-row">
+        <div class="ctrl-label">
+          <span class="ctrl-name">Line Gap</span>
+          <span class="ctrl-val" id="gLabel">40px</span>
+        </div>
+        <input type="range" id="linegap" min="10" max="120" step="2" value="40">
+      </div>
     </div>
 
-    <div class="control-cell">
-      <div class="control-label">
-        Cell Size
-        <span class="control-value" id="cLabel">40px</span>
+    <div class="panel-section">
+      <div class="section-title">Size</div>
+      <div class="ctrl-row">
+        <div class="ctrl-label">
+          <span class="ctrl-name">Cell Size</span>
+          <span class="ctrl-val" id="cLabel">40px</span>
+        </div>
+        <input type="range" id="cellsize" min="20" max="80" step="1" value="40">
       </div>
-      <input type="range" id="cellsize" min="20" max="80" step="1" value="40">
     </div>
 
-    <div class="control-cell">
-      <div class="control-label">
-        Line Gap
-        <span class="control-value" id="gLabel">40px</span>
-      </div>
-      <input type="range" id="linegap" min="10" max="120" step="2" value="40">
-    </div>
   </div>
 
-  <div class="canvas-area">
+  <div class="canvas-wrap">
     <div class="canvas-inner" id="canvas"></div>
-  </div>
-
-  <div class="bottom-bar">
-    <span class="dot-count" id="dotCount">— dots</span>
-    <button class="export-btn" id="exportBtn">Export SVG ↗</button>
   </div>
 
 </div>
@@ -260,7 +314,7 @@ WORLD</textarea>
   var cols = 5, rows = 7;
 
   function computeDots() {
-    var txt     = document.getElementById('txt').value.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+    var txt     = document.getElementById('txt').value.replace(/\r\n/g,'\n').replace(/\r/g,'\n');
     var weight  = parseFloat(document.getElementById('weight').value);
     var spacing = parseInt(document.getElementById('spacing').value);
     var cell    = parseInt(document.getElementById('cellsize').value);
@@ -283,17 +337,14 @@ WORLD</textarea>
     lines.forEach(function (line, li) {
       var ox = 0;
       var oy = li * lineGap;
-
       for (var ci = 0; ci < line.length; ci++) {
         var ch = line[ci].toUpperCase();
         var g  = glyphs[ch];
-
         if (!g) { ox += cols * cell + spacing; continue; }
-
         for (var y = 0; y < rows; y++) {
           for (var x = 0; x < cols; x++) {
             if (g[y][x] === '1') {
-              dots.push({ cx: ox + x * cell + cell / 2, cy: oy + y * cell + cell / 2, r: r });
+              dots.push({ cx: ox + x*cell + cell/2, cy: oy + y*cell + cell/2, r: r });
             }
           }
         }
@@ -319,13 +370,13 @@ WORLD</textarea>
     canvas.style.height = res.h + 'px';
 
     res.dots.forEach(function (dot) {
-      var el   = document.createElement('div');
+      var el = document.createElement('div');
       el.className = 'dot-el';
-      var diam = dot.r * 2;
+      var d = dot.r * 2;
       el.style.left   = dot.cx + 'px';
       el.style.top    = dot.cy + 'px';
-      el.style.width  = diam + 'px';
-      el.style.height = diam + 'px';
+      el.style.width  = d + 'px';
+      el.style.height = d + 'px';
       canvas.appendChild(el);
     });
 
@@ -341,20 +392,17 @@ WORLD</textarea>
       lines.push('  <circle cx="' + d.cx.toFixed(1) + '" cy="' + d.cy.toFixed(1) + '" r="' + d.r.toFixed(1) + '" fill="black"/>');
     });
     lines.push('</svg>');
-
     var svg  = lines.join('\n');
     var blob = new Blob([svg], { type: 'image/svg+xml' });
     var url  = URL.createObjectURL(blob);
     var a    = document.createElement('a');
-    a.href = url;
-    a.download = 'dot-font.svg';
-    document.body.appendChild(a);
-    a.click();
+    a.href = url; a.download = 'dot-font.svg';
+    document.body.appendChild(a); a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
   }
 
-  ['txt', 'weight', 'spacing', 'cellsize', 'linegap'].forEach(function (id) {
+  ['txt','weight','spacing','cellsize','linegap'].forEach(function(id) {
     document.getElementById(id).addEventListener('input', draw);
   });
   document.getElementById('exportBtn').addEventListener('click', exportSvg);
