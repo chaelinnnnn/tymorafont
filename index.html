@@ -2,272 +2,365 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>Dot Font Multiline + SVG Export</title>
+  <title>Dot Font Generator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
   <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
     body {
-      font-family: system-ui, sans-serif;
-      padding: 20px;
-      line-height: 1.6;
+      font-family: 'DM Sans', sans-serif;
+      background: #ffffff;
+      color: #111111;
+      min-height: 100vh;
+      padding: 48px 40px 60px;
     }
-    #grid {
-      position: relative;
-      display: inline-block;
-      margin-top: 20px;
-      border: 1px dashed #ccc;
-      background: #f9f9f9;
+
+    .app {
+      max-width: 900px;
+      margin: 0 auto;
     }
-    .dot {
-      position: absolute;
-      border-radius: 50%;
-      background: black;
-      transform: translate(-50%, -50%);
+
+    .app-header {
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+      margin-bottom: 48px;
     }
-    label {
-      font-weight: 600;
-      display: block;
-      margin-top: 14px;
+
+    .app-title {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      font-weight: 400;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #999;
+      white-space: nowrap;
     }
-    textarea#textInput {
-      width: 320px;
-      height: 100px;
-      padding: 8px;
-      font-size: 16px;
-      font-family: inherit;
-      box-sizing: border-box;
-      white-space: pre;
+
+    .app-divider {
+      flex: 1;
+      height: 0.5px;
+      background: #e0e0e0;
     }
-    #svgCode {
+
+    .controls {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      border: 0.5px solid #e0e0e0;
+      border-radius: 12px;
+      overflow: hidden;
+      margin-bottom: 24px;
+    }
+
+    .control-cell {
+      padding: 20px 24px;
+      border-right: 0.5px solid #e0e0e0;
+      border-bottom: 0.5px solid #e0e0e0;
+    }
+
+    .control-cell:nth-child(2n) { border-right: none; }
+    .control-cell:nth-last-child(-n+2) { border-bottom: none; }
+
+    .textarea-cell {
+      grid-column: 1 / -1;
+      border-right: none;
+      border-bottom: 0.5px solid #e0e0e0;
+    }
+
+    .control-label {
+      font-size: 11px;
+      font-family: 'DM Mono', monospace;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #999;
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .control-value {
+      font-weight: 500;
+      color: #111;
+      letter-spacing: 0;
+      text-transform: none;
+      font-family: 'DM Sans', sans-serif;
+    }
+
+    textarea {
       width: 100%;
-      height: 200px;
-      margin-top: 16px;
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-      font-size: 12px;
-      box-sizing: border-box;
+      border: none;
+      background: transparent;
+      font-family: 'DM Mono', monospace;
+      font-size: 13px;
+      font-weight: 300;
+      color: #111;
+      resize: none;
+      outline: none;
+      line-height: 1.6;
+      height: 56px;
     }
-    button {
-      margin-top: 14px;
-      padding: 8px 16px;
-      font-size: 14px;
+
+    textarea::placeholder { color: #bbb; }
+
+    input[type="range"] {
+      width: 100%;
+      accent-color: #111;
       cursor: pointer;
     }
+
+    .canvas-area {
+      border: 0.5px solid #e0e0e0;
+      border-radius: 12px;
+      padding: 40px;
+      overflow: auto;
+      min-height: 200px;
+      display: flex;
+      align-items: flex-start;
+      justify-content: flex-start;
+      background: #ffffff;
+    }
+
+    .canvas-inner {
+      position: relative;
+      flex-shrink: 0;
+    }
+
+    .dot-el {
+      position: absolute;
+      border-radius: 50%;
+      background: #111111;
+      transform: translate(-50%, -50%);
+    }
+
+    .bottom-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 16px;
+    }
+
+    .dot-count {
+      font-size: 11px;
+      font-family: 'DM Mono', monospace;
+      color: #999;
+      letter-spacing: 0.08em;
+    }
+
+    .export-btn {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 8px 18px;
+      border: 0.5px solid #ccc;
+      border-radius: 8px;
+      background: transparent;
+      color: #555;
+      cursor: pointer;
+      transition: background 0.12s, color 0.12s;
+    }
+
+    .export-btn:hover { background: #f5f5f5; color: #111; }
+    .export-btn:active { transform: scale(0.98); }
   </style>
 </head>
 <body>
+<div class="app">
 
-<h1>Dot Weight Font (0 → 2.0 Blob) + Multiline + SVG</h1>
+  <div class="app-header">
+    <span class="app-title">Dot Font</span>
+    <div class="app-divider"></div>
+  </div>
 
-<label>
-  Text Input (line breaks allowed):
-  <textarea id="textInput">HELLO
+  <div class="controls">
+    <div class="control-cell textarea-cell">
+      <div class="control-label">Text</div>
+      <textarea id="txt" placeholder="Type something..." spellcheck="false">HELLO
 WORLD</textarea>
-</label>
+    </div>
 
-<label>
-  Weight (0 → 2.0):
-  <input id="weightSlider" type="range" min="0" max="2" step="0.01" value="0.5">
-  <span id="weightLabel">0.50</span>
-</label>
+    <div class="control-cell">
+      <div class="control-label">
+        Weight
+        <span class="control-value" id="wLabel">0.50</span>
+      </div>
+      <input type="range" id="weight" min="0" max="2" step="0.01" value="0.5">
+    </div>
 
-<label>
-  Letter Spacing (px):
-  <input id="spacingSlider" type="range" min="0" max="100" step="1" value="20">
-  <span id="spacingLabel">20px</span>
-</label>
+    <div class="control-cell">
+      <div class="control-label">
+        Letter Spacing
+        <span class="control-value" id="sLabel">20px</span>
+      </div>
+      <input type="range" id="spacing" min="0" max="100" step="1" value="20">
+    </div>
 
-<button id="exportSvgBtn">Export SVG</button>
+    <div class="control-cell">
+      <div class="control-label">
+        Cell Size
+        <span class="control-value" id="cLabel">40px</span>
+      </div>
+      <input type="range" id="cellsize" min="20" max="80" step="1" value="40">
+    </div>
 
-<div id="grid"></div>
+    <div class="control-cell">
+      <div class="control-label">
+        Line Gap
+        <span class="control-value" id="gLabel">40px</span>
+      </div>
+      <input type="range" id="linegap" min="10" max="120" step="2" value="40">
+    </div>
+  </div>
 
-<textarea id="svgCode" placeholder="SVG code will appear here."></textarea>
+  <div class="canvas-area">
+    <div class="canvas-inner" id="canvas"></div>
+  </div>
+
+  <div class="bottom-bar">
+    <span class="dot-count" id="dotCount">— dots</span>
+    <button class="export-btn" id="exportBtn">Export SVG ↗</button>
+  </div>
+
+</div>
 
 <script>
-window.addEventListener('load', function () {
-  // 5x7 dot font (A~Z)
+(function () {
   var glyphs = {
-    A: [ "01110","10001","10001","11111","10001","10001","10001" ],
-    B: [ "11110","10001","10001","11110","10001","10001","11110" ],
-    C: [ "01110","10001","10000","10000","10000","10001","01110" ],
-    D: [ "11100","10010","10001","10001","10001","10010","11100" ],
-    E: [ "11111","10000","10000","11110","10000","10000","11111" ],
-    F: [ "11111","10000","10000","11110","10000","10000","10000" ],
-    G: [ "01110","10001","10000","10111","10001","10001","01110" ],
-    H: [ "10001","10001","10001","11111","10001","10001","10001" ],
-    I: [ "01110","00100","00100","00100","00100","00100","01110" ],
-    J: [ "00111","00010","00010","00010","10010","10010","01100" ],
-    K: [ "10001","10010","10100","11000","10100","10010","10001" ],
-    L: [ "10000","10000","10000","10000","10000","10000","11111" ],
-    M: [ "10001","11011","10101","10001","10001","10001","10001" ],
-    N: [ "10001","11001","10101","10011","10001","10001","10001" ],
-    O: [ "01110","10001","10001","10001","10001","10001","01110" ],
-    P: [ "11110","10001","10001","11110","10000","10000","10000" ],
-    Q: [ "01110","10001","10001","10001","10101","10010","01101" ],
-    R: [ "11110","10001","10001","11110","10100","10010","10001" ],
-    S: [ "01111","10000","10000","01110","00001","00001","11110" ],
-    T: [ "11111","00100","00100","00100","00100","00100","00100" ],
-    U: [ "10001","10001","10001","10001","10001","10001","01110" ],
-    V: [ "10001","10001","10001","10001","10001","01010","00100" ],
-    W: [ "10001","10001","10001","10001","10101","11011","10001" ],
-    X: [ "10001","01010","00100","00100","00100","01010","10001" ],
-    Y: [ "10001","01010","00100","00100","00100","00100","00100" ],
-    Z: [ "11111","00001","00010","00100","01000","10000","11111" ]
+    A: ["01110","10001","10001","11111","10001","10001","10001"],
+    B: ["11110","10001","10001","11110","10001","10001","11110"],
+    C: ["01110","10001","10000","10000","10000","10001","01110"],
+    D: ["11100","10010","10001","10001","10001","10010","11100"],
+    E: ["11111","10000","10000","11110","10000","10000","11111"],
+    F: ["11111","10000","10000","11110","10000","10000","10000"],
+    G: ["01110","10001","10000","10111","10001","10001","01110"],
+    H: ["10001","10001","10001","11111","10001","10001","10001"],
+    I: ["01110","00100","00100","00100","00100","00100","01110"],
+    J: ["00111","00010","00010","00010","10010","10010","01100"],
+    K: ["10001","10010","10100","11000","10100","10010","10001"],
+    L: ["10000","10000","10000","10000","10000","10000","11111"],
+    M: ["10001","11011","10101","10001","10001","10001","10001"],
+    N: ["10001","11001","10101","10011","10001","10001","10001"],
+    O: ["01110","10001","10001","10001","10001","10001","01110"],
+    P: ["11110","10001","10001","11110","10000","10000","10000"],
+    Q: ["01110","10001","10001","10001","10101","10010","01101"],
+    R: ["11110","10001","10001","11110","10100","10010","10001"],
+    S: ["01111","10000","10000","01110","00001","00001","11110"],
+    T: ["11111","00100","00100","00100","00100","00100","00100"],
+    U: ["10001","10001","10001","10001","10001","10001","01110"],
+    V: ["10001","10001","10001","10001","10001","01010","00100"],
+    W: ["10001","10001","10001","10001","10101","11011","10001"],
+    X: ["10001","01010","00100","00100","00100","01010","10001"],
+    Y: ["10001","01010","00100","00100","00100","00100","00100"],
+    Z: ["11111","00001","00010","00100","01000","10000","11111"],
+    " ": null
   };
 
-  // settings
-  var cols = 5;
-  var rows = 7;
-  var cellSize = 40;
+  var cols = 5, rows = 7;
 
-  var minR = 4;
-  var midR = 18;
-  var blobExtra = 40;
-
-  var lineGap = rows * cellSize + 40;
-
-  var grid          = document.getElementById('grid');
-  var textInput     = document.getElementById('textInput');
-  var weightSlider  = document.getElementById('weightSlider');
-  var spacingSlider = document.getElementById('spacingSlider');
-  var weightLabel   = document.getElementById('weightLabel');
-  var spacingLabel  = document.getElementById('spacingLabel');
-  var svgCodeArea   = document.getElementById('svgCode');
-  var exportSvgBtn  = document.getElementById('exportSvgBtn');
-
-  // compute dots
   function computeDots() {
-    var raw   = textInput.value.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
-    var lines = raw.split('\n');
+    var txt     = document.getElementById('txt').value.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+    var weight  = parseFloat(document.getElementById('weight').value);
+    var spacing = parseInt(document.getElementById('spacing').value);
+    var cell    = parseInt(document.getElementById('cellsize').value);
+    var lgap    = parseInt(document.getElementById('linegap').value);
+    var lineGap = rows * cell + lgap;
 
-    var weight  = parseFloat(weightSlider.value) || 0;
-    var spacing = parseInt(spacingSlider.value, 10) || 0;
+    var minR      = cell * 0.1;
+    var midR      = cell * 0.45;
+    var blobExtra = cell;
 
-    var dots = [];
-    var maxWidth = 0;
+    var base = Math.min(weight, 1);
+    var diam = (minR + (midR - minR) * base) * 2;
+    if (weight > 1) diam += blobExtra * (weight - 1);
+    var r = diam / 2;
 
-    for (var li = 0; li < lines.length; li++) {
-      var line = lines[li];
-      var offsetX = 0;
-      var offsetY = li * lineGap;
+    var lines = txt.split('\n');
+    var dots  = [];
+    var maxW  = 0;
+
+    lines.forEach(function (line, li) {
+      var ox = 0;
+      var oy = li * lineGap;
 
       for (var ci = 0; ci < line.length; ci++) {
-        var ch = line.charAt(ci).toUpperCase();
-        var glyph = glyphs[ch];
+        var ch = line[ci].toUpperCase();
+        var g  = glyphs[ch];
 
-        if (!glyph) {
-          offsetX += cols * cellSize + spacing;
-          continue;
-        }
-
-        var base = Math.min(weight, 1);
-        var radius = minR + (midR - minR) * base;
-        var diameter = radius * 2;
-
-        if (weight > 1) {
-          var extra = weight - 1;
-          diameter += blobExtra * extra;
-        }
-
-        var r = diameter / 2;
+        if (!g) { ox += cols * cell + spacing; continue; }
 
         for (var y = 0; y < rows; y++) {
           for (var x = 0; x < cols; x++) {
-            if (glyph[y].charAt(x) === '1') {
-              dots.push({
-                cx: offsetX + x * cellSize + cellSize / 2,
-                cy: offsetY + y * cellSize + cellSize / 2,
-                r: r
-              });
+            if (g[y][x] === '1') {
+              dots.push({ cx: ox + x * cell + cell / 2, cy: oy + y * cell + cell / 2, r: r });
             }
           }
         }
-
-        offsetX += cols * cellSize + spacing;
+        ox += cols * cell + spacing;
       }
+      if (ox > maxW) maxW = ox;
+    });
 
-      if (offsetX > maxWidth) {
-        maxWidth = offsetX;
-      }
-    }
-
-    if (maxWidth === 0) {
-      maxWidth = cols * cellSize;
-    }
-
-    var height = Math.max(lineGap * lines.length, lineGap);
-
-    return { dots: dots, width: maxWidth, height: height };
+    if (maxW === 0) maxW = cols * cell;
+    return { dots: dots, w: maxW, h: lineGap * lines.length };
   }
 
-  // render
-  function drawText() {
-    var result = computeDots();
-    var dots   = result.dots;
-    var width  = result.width;
-    var height = result.height;
+  function draw() {
+    document.getElementById('wLabel').textContent = parseFloat(document.getElementById('weight').value).toFixed(2);
+    document.getElementById('sLabel').textContent = document.getElementById('spacing').value + 'px';
+    document.getElementById('cLabel').textContent = document.getElementById('cellsize').value + 'px';
+    document.getElementById('gLabel').textContent = document.getElementById('linegap').value + 'px';
 
-    weightLabel.textContent  = parseFloat(weightSlider.value).toFixed(2);
-    spacingLabel.textContent = spacingSlider.value + 'px';
+    var res    = computeDots();
+    var canvas = document.getElementById('canvas');
+    canvas.innerHTML = '';
+    canvas.style.width  = res.w + 'px';
+    canvas.style.height = res.h + 'px';
 
-    grid.innerHTML = '';
+    res.dots.forEach(function (dot) {
+      var el   = document.createElement('div');
+      el.className = 'dot-el';
+      var diam = dot.r * 2;
+      el.style.left   = dot.cx + 'px';
+      el.style.top    = dot.cy + 'px';
+      el.style.width  = diam + 'px';
+      el.style.height = diam + 'px';
+      canvas.appendChild(el);
+    });
 
-    for (var i = 0; i < dots.length; i++) {
-      var d = dots[i];
-      var dot = document.createElement('div');
-      dot.className = 'dot';
-      var diameter = d.r * 2;
-      dot.style.left   = d.cx + 'px';
-      dot.style.top    = d.cy + 'px';
-      dot.style.width  = diameter + 'px';
-      dot.style.height = diameter + 'px';
-      grid.appendChild(dot);
-    }
-
-    grid.style.width  = width + 'px';
-    grid.style.height = height + 'px';
+    document.getElementById('dotCount').textContent = res.dots.length + ' dots';
   }
 
-  // export SVG
   function exportSvg() {
-    var result = computeDots();
-    var dots   = result.dots;
-    var width  = result.width;
-    var height = result.height;
-
-    var lines = [];
-    lines.push('<svg xmlns="http://www.w3.org/2000/svg" width="' + width + '" height="' + height + '" viewBox="0 0 ' + width + ' ' + height + '">');
-
-    for (var i = 0; i < dots.length; i++) {
-      var d = dots[i];
-      lines.push('  <circle cx="' + d.cx.toFixed(2) + '" cy="' + d.cy.toFixed(2) + '" r="' + d.r.toFixed(2) + '" fill="black" />');
-    }
-
+    var res   = computeDots();
+    var lines = [
+      '<svg xmlns="http://www.w3.org/2000/svg" width="' + res.w + '" height="' + res.h + '" viewBox="0 0 ' + res.w + ' ' + res.h + '">'
+    ];
+    res.dots.forEach(function (d) {
+      lines.push('  <circle cx="' + d.cx.toFixed(1) + '" cy="' + d.cy.toFixed(1) + '" r="' + d.r.toFixed(1) + '" fill="black"/>');
+    });
     lines.push('</svg>');
 
-    var svg = lines.join('\n');
-    svgCodeArea.value = svg;
-
-    try {
-      var blob = new Blob([svg], { type: 'image/svg+xml' });
-      var url  = URL.createObjectURL(blob);
-      var a    = document.createElement('a');
-      a.href = url;
-      a.download = 'dot-font.svg';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    } catch (e) {
-      console.log('Error while downloading SVG:', e);
-    }
+    var svg  = lines.join('\n');
+    var blob = new Blob([svg], { type: 'image/svg+xml' });
+    var url  = URL.createObjectURL(blob);
+    var a    = document.createElement('a');
+    a.href = url;
+    a.download = 'dot-font.svg';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   }
 
-  textInput.addEventListener('input', drawText);
-  weightSlider.addEventListener('input', drawText);
-  spacingSlider.addEventListener('input', drawText);
-  exportSvgBtn.addEventListener('click', exportSvg);
+  ['txt', 'weight', 'spacing', 'cellsize', 'linegap'].forEach(function (id) {
+    document.getElementById(id).addEventListener('input', draw);
+  });
+  document.getElementById('exportBtn').addEventListener('click', exportSvg);
 
-  drawText();
-});
+  draw();
+})();
 </script>
-
 </body>
 </html>
