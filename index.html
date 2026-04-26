@@ -8,11 +8,15 @@
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+    /* iframe 안에서 부모 높이를 제대로 받도록 html도 100% */
+    html { height: 100%; }
+
     body {
       font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
       background: #ffffff;
       color: #111111;
-      height: 100vh;
+      height: 100%;
+      min-height: 100vh;
       display: flex;
       flex-direction: column;
       overflow: hidden;
@@ -75,7 +79,7 @@
     .layout {
       display: flex;
       flex: 1;
-      min-height: 0;
+      min-height: 0; /* flexbox에서 자식이 넘치지 않도록 */
     }
 
     /* ── SIDEBAR ── */
@@ -143,7 +147,7 @@
       color: #111;
     }
 
-    /* ── SLIDER — round thumb ── */
+    /* ── SLIDER ── */
     input[type="range"] {
       -webkit-appearance: none;
       appearance: none;
@@ -176,6 +180,7 @@
     /* ── CANVAS ── */
     .canvas-wrap {
       flex: 1;
+      min-width: 0;
       display: flex;
       align-items: flex-start;
       justify-content: flex-start;
@@ -202,7 +207,7 @@
 <div class="topbar">
   <div class="topbar-title">Particle Controls</div>
   <div class="topbar-right">
-    <span class="dot-count" id="dotCount">— dots</span>
+    <span class="dot-count" id="dotCount">0 dots</span>
     <button class="export-btn" id="exportBtn">Save SVG</button>
   </div>
 </div>
